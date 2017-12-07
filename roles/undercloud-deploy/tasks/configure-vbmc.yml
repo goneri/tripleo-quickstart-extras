@@ -35,18 +35,6 @@
       session_timout=20
   become: true
 
-# the non_root_user id is not in the facts of the virthost when
-# executed in devmode.  To be safe let's delegate to the virthost
-# and obtain the uuid of the non_root_user
-- name: get virthost non_root_user userid
-  shell: id -u {{ non_root_user }}
-  register: non_root_user_uid
-  delegate_to: virthost
-
-- name: set fact on non_root_user_uid
-  set_fact:
-    non_root_user_uid: "{{ non_root_user_uid.stdout }}"
-
 # The first network defined with an address will be used for vbmc access.
 - name: set vbmc address if there is a (nat) network defined with an address
   set_fact:
@@ -69,7 +57,7 @@
 
 - name: set qemu uri for qemu:///session usage
   set_fact:
-    vbmc_libvirt_uri: "qemu+ssh://{{ non_root_user }}@{{ vbmc_address }}/session?socket=/run/user/{{ non_root_user_uid }}/libvirt/libvirt-sock&keyfile=/root/.ssh/id_rsa_virt_power&no_verify=1&no_tty=1"
+    vbmc_libvirt_uri: "qemu+ssh://{{ ansible_user }}@{{ vbmc_address }}/session?socket=/run/user/{{ ansible_user_id }}/libvirt/libvirt-sock&keyfile=/root/.ssh/id_rsa_virt_power&no_verify=1&no_tty=1"
   when: vbmc_libvirt_uri is not defined
 
 - name: Create the Virtual BMCs
